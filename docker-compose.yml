@@ -1,0 +1,42 @@
+version: '3.1'
+#create network interface
+networks:
+  SupperFL:
+    name: SupperFL
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET}/24
+services:
+#init node 1
+  node1:
+    container_name: node1
+    image: javaenv
+    build:
+      context:  ./
+      dockerfile:  Dockerfile
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./Main.java:/app/Main.java
+    networks:
+      SupperFL:
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    restart: on-failure:3
+#init node 2
+  node2:
+    container_name: node2
+    image: javaenv
+    build:
+      context:  ./
+      dockerfile:  Dockerfile
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./Main.java:/app/Main.java
+    networks:
+      SupperFL:
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    restart: on-failure:3
