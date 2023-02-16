@@ -6,4 +6,8 @@ COPY ./Main.java ./
 
 RUN javac Main.java
 
-CMD ["java", "Main"]
+COPY startup.sh .
+RUN chmod +x startup.sh
+
+CMD ["./startup.sh"]
+
