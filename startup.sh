@@ -4,6 +4,6 @@ java Main
 
 while true
 do
-  echo "bah is background running."
+  echo "bash is background running."
   sleep 60
 done
