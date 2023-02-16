@@ -1,6 +1,7 @@
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.IOException;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -18,7 +19,7 @@ public class Main {
 
 class IpAddress{
     public String scan(){
-        String address = "null";
+        String address = "";
         try {
             InetAddress ip = InetAddress.getLocalHost();
             address = ip.getHostAddress();
@@ -30,9 +31,12 @@ class IpAddress{
 }
 class Network {
     String subnet = "0.0.0.";
+    String myip = "";
     String[] ipArray = new String[256];
+    List<String> DeviceIplist = new ArrayList<String>();
 
     Network(String Deviceip){
+        myip = Deviceip;
         subnet = Deviceip.substring(0, Deviceip.lastIndexOf(".") + 1);
         for (int i = 0; i <= 255; i++) {
             ipArray[i] = "191.168.8." + i;
@@ -41,20 +45,25 @@ class Network {
 
     public void scan(int iplevel) {
         for (int i = 0; i <= 255; i++) {
-            Ipresult(ipArray[i]);
+            String filtedIP = Ipresult(ipArray[i]);
+            if (!filtedIP.isEmpty()) {
+                DeviceIplist.add(filtedIP);
+                System.out.println("IP address " + filtedIP + " is reachable");
+            }
         }
     }
 
-    void Ipresult(String ipAddress) {
-        // ipAddress = "191.168.8.3";
+    String Ipresult(String ipAddress) {
         try {
             InetAddress inet = InetAddress.getByName(ipAddress);
-
             if (inet.isReachable(5000)) {
-                System.out.println("IP address " + ipAddress + " is reachable");
+                if(!myip.equals(ipAddress)){
+                    return ipAddress;
+                }
             }
         } catch (IOException e) {
             System.err.println("An error occurred while pinging the IP address: " + e.getMessage());
         }
+        return "";
     }
 }
