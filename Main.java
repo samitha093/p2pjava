@@ -10,22 +10,25 @@ import java.io.InputStream;
 
 public class Main {
     public static void main(String[] args) {
+        //start msg reciving server
         NetworkReceiver myreceiver = new NetworkReceiver(4050);
         myreceiver.start();
-        NetworkSender mysender = new NetworkSender();
+        //find device ip fron network adapter
         IpAddress myIp = new IpAddress();
-        String result = myIp.scan();
-        if (result.isEmpty()) {
+        String deviceip = myIp.scan();
+
+        if (deviceip.isEmpty()) {
             System.out.println("Systen ip not detected");
         } else {
-            System.out.println("My ip address : " + result);
-            Network mynetwork = new Network(result);
+            System.out.println("My ip address : " + deviceip);
+            //find pears
+            Network mynetwork = new Network(deviceip);
             mynetwork.start();
-            mysender.send();
+
         }
     }
 }
-
+//network interface scanner
 class IpAddress{
     public String scan(){
         String address = "";
@@ -38,12 +41,14 @@ class IpAddress{
         return address;
     }
 }
+//peers finder
 class Network extends Thread{
     String subnet = "0.0.0.";
     String myip = "";
     String[] ipArray = new String[256];
     List<String> DeviceIplist = new ArrayList<String>();
 
+    //genarate ip list
     Network(String Deviceip){
         myip = Deviceip;
         subnet = Deviceip.substring(0, Deviceip.lastIndexOf(".") + 1);
@@ -51,17 +56,25 @@ class Network extends Thread{
             ipArray[i] = "191.168.8." + i;
         }
     }
+    //ping ip list - (filter 1)
     @Override
     public void run() {
+        NetworkSender mysender = new NetworkSender();
         for (int i = 0; i <= 255; i++) {
+            //send ping packet
             String filtedIP = Ipresult(ipArray[i]);
             if (!filtedIP.isEmpty()) {
-                DeviceIplist.add(filtedIP);
+                //Send verification message - (filter2)
+                mysender.send(filtedIP,"");
+                    //creat the real peer list
+                    DeviceIplist.add(filtedIP);
                 System.out.println("IP address " + filtedIP + " is reachable");
+                //
             }
         }
     }
 
+    //ping packet sender
     String Ipresult(String ipAddress) {
         try {
             InetAddress inet = InetAddress.getByName(ipAddress);
@@ -76,10 +89,10 @@ class Network extends Thread{
         return "";
     }
 }
-
+//network message sender
 class NetworkSender {
-    public void send() {
-        String ipAddress = "191.168.8.3";
+    public void send(String ipAddress, String msg) {
+        ipAddress = "191.168.8.3";
         int portNumber = 4050;
         System.out.println("Start to send the message");
         try {
@@ -97,12 +110,12 @@ class NetworkSender {
             outputStream.close();
             socket.close();
 
-            System.out.println("Message sent to the network.");
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 }
+//network message reciver
 class NetworkReceiver extends Thread {
     private int portNumber;
 
